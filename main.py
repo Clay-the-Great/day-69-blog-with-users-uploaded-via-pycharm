@@ -76,7 +76,7 @@ class Comment(db.Model):
     parent_blog = relationship("BlogPost", back_populates="comments")
 
 
-# db.create_all()
+db.create_all()
 logged_in = False
 current_user_id = 0
 
