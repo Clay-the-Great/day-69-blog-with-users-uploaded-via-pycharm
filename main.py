@@ -1,3 +1,4 @@
+import requests
 from flask import Flask, render_template, redirect, url_for, flash, request, abort
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
@@ -12,6 +13,11 @@ from functools import wraps
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 import os
+
+# BOT_TOKEN = "5741115248:AAFgEELGcwLMkUwfhQiiX82POBauG1cLpBk"
+# BOT_CHATID = "5016448629"
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+BOT_CHATID = os.environ.get("BOT_CHATID")
 
 app = Flask(__name__)
 # app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
@@ -197,9 +203,29 @@ def about():
     return render_template("about.html", logged_in=logged_in)
 
 
-@app.route("/contact")
+@app.route("/contact", methods=["POST", "GET"])
 def contact():
-    return render_template("contact.html", logged_in=logged_in)
+    is_successful = False
+    if request.method == "GET":
+        return render_template("contact.html", logged_in=logged_in, is_successful=is_successful)
+    elif request.method == "POST":
+        name = request.form["username"]
+        email = request.form["email"]
+        phone = request.form["phone"]
+        message = request.form["message"]
+
+        bot_message = f"Blog Reader Message\n\n" \
+                      f"Name: {name}\n" \
+                      f"Email: {email}\n" \
+                      f"Phone: {phone}\n" \
+                      f"Message: {message}"
+
+        send_telegram_message = 'https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage?chat_id=' + \
+                                BOT_CHATID + '&parse_mode=Markdown&text=' + bot_message
+        requests.get(send_telegram_message)
+
+        is_successful = True
+        return render_template("contact.html", logged_in=logged_in, is_successful=is_successful)
 
 
 @app.route("/new-post", methods=["POST", "GET"])
